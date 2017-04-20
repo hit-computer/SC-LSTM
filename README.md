@@ -21,3 +21,20 @@ Start training the model using `train.py`:
 $ python train.py
 ```
 
+### Generation
+
+After you train the model, you can generate the text under the control of word set. You should modify `generation.py` file and set `test_word` to a set of words. Then, if you want, you can also set some parameters for generation in `Config.py` file. Generate text by run:
+
+```
+$ python generation.py
+```
+
+### Result
+
+We randomly choose a set of words from trainingdata, `[u'FDA', u'menu']`. The training data is so small that we can't get a desired result, and a result sample show below:
+
+```
+Depp Calorie proposes the pregnancy END END PAD
+```
+
+If you have large-scale dataset, I think you could get much better result.

@@ -218,7 +218,7 @@ def main(_):
             
             if (i+1) % config.save_freq == 0:
                 print 'model saving ...'
-                model_saver.save(session, config.model_path+'-%d'%(i+1))
+                model_saver.save(session, config.model_path+'--%d'%(i+1))
                 print 'Done!'
             
 if __name__ == "__main__":
