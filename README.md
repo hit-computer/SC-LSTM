@@ -9,7 +9,7 @@ We need text-word_set pairs to train SC-LSTM model, but to the best of our knowl
 
 ### Data
 
-In `Data/` respository, there are three files `TrainingData_keywords.txt` , `TrainingData_Text.txt` and `vec10.txt`(word embedding trained by word2vec), which is created from news article dataset mentioned above. `TrainingData_Text.txt` file contains just title, and each line is a title which is regarded as one text(data). Correspondingly, `TrainingData_keywords.txt` file contains word set, and each line is a set of word for text. Then, we use this text-words pair data to train SC-LSTM model.
+In `Data/` respository, there are three files `TrainingData_keywords.txt` , `TrainingData_Text.txt` and `vec5.txt`(word embedding trained by word2vec), which is created from news article dataset mentioned above. `TrainingData_Text.txt` file contains just title, and each line is a title which is regarded as one text(data). Correspondingly, `TrainingData_keywords.txt` file contains word set, and each line is a set of word for text. Then, we use this text-words pair data to train SC-LSTM model.
 
 ### Training
 
