@@ -11,6 +11,9 @@ from tensorflow.python.ops.math_ops import sigmoid
 from tensorflow.python.ops import nn_ops
 
 class SC_LSTM(BasicLSTMCell):
+    def __init__(self, kwd_voc_size, *args, **kwargs):
+        BasicLSTMCell.__init__(self, *args, **kwargs)
+        self.key_words_voc_size = kwd_voc_size
     def __call__(self, inputs, state, d_act, scope=None):
         """Long short-term memory cell (LSTM)."""
         with vs.variable_scope(scope or type(self).__name__):  # "BasicLSTMCell"
@@ -24,7 +27,7 @@ class SC_LSTM(BasicLSTMCell):
             # i = input_gate, j = new_input, f = forget_gate, o = output_gate
             i, j, f, o = array_ops.split(1, 4, concat)
             
-            w_d = vs.get_variable('w_d', [key_words_voc_size, self._num_units])
+            w_d = vs.get_variable('w_d', [self.key_words_voc_size, self._num_units])
             
             new_c = (c * sigmoid(f + self._forget_bias) + sigmoid(i) *
                     self._activation(j)) + tf.tanh(tf.matmul(d_act, w_d))
