@@ -33,8 +33,6 @@ $ python generation.py
 
 We randomly choose a set of words from trainingdata, `[u'FDA', u'menu']`. The training data is so small that we can't get a desired result, and a result sample show below:
 
-```
-Depp Calorie proposes the pregnancy END END PAD
-```
+>Depp Calorie proposes the pregnancy END END PAD
 
 If you have large-scale dataset, I think you could get much better result.
