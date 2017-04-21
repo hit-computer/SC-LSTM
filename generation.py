@@ -101,7 +101,7 @@ class Model(object):
     def final_state(self):
         return self._final_state
 
-def run_epoch(session, m, data, state=None, sc_vec=None, verbose=False, flag = 1, last_output=None):
+def run_epoch(session, m, data, state=None, sc_vec=None, flag = 1, last_output=None):
     """Runs the model on the given data."""
     x = data.reshape((1,1))
     initial_output = np.zeros((m.batch_size, m.size))

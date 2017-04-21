@@ -9,11 +9,11 @@ We need text-word_set pairs to train SC-LSTM model, but to the best of our knowl
 
 ### Data
 
-In `Data/` respository, there are three files `TrainingData_keywords.txt` , `TrainingData_Text.txt` and `vec5.txt`(word embedding trained by word2vec), which is created from news article dataset mentioned above. `TrainingData_Text.txt` file contains just title, and each line is a title which is regarded as one text(data). Correspondingly, `TrainingData_keywords.txt` file contains word set, and each line is a set of word for text. Then, we use this text-words pair data to train SC-LSTM model.
+In `Data/` respository, there are three files `TrainingData_Keywords.txt` , `TrainingData_Text.txt` and `vec5.txt`(word embedding trained by word2vec), which is created from news article dataset mentioned above. `TrainingData_Text.txt` file contains just title, and each line is a title which is regarded as one text(data). Correspondingly, `TrainingData_keywords.txt` file contains word set, and each line is a set of word for text. Then, we use this text-words pair data to train SC-LSTM model.
 
 ### Training
 
-Before train the model, you should set some parameters of this model in `Config.py` file. Then, you need to run `Preprocess.py` file for creating `sclstm_data` file(convert trainingdata into binary formats of TensorFlow), `word_vec.pkl` file(this is word embedding), `word_vec.pkl` file(vocabulary of text) and `kwd_voc.pkl` file(vocabulary of keywords). 
+Before train the model, you should set some parameters of this model in `Config.py` file. Then, you need to run `Preprocess.py` file for creating `sclstm_data` file(convert trainingdata into binary formats of TensorFlow, and more detail about this can be found in [the blog](https://indico.io/blog/tensorflow-data-inputs-part1-placeholders-protobufs-queues/)), `word_vec.pkl` file(this is word embedding), `word_vec.pkl` file(vocabulary of text) and `kwd_voc.pkl` file(vocabulary of keywords). 
 
 Start training the model using `train.py`:
 
@@ -31,8 +31,9 @@ $ python generation.py
 
 ### Result
 
-We randomly choose a set of words from trainingdata, `[u'FDA', u'menu']`. The training data is so small that we can't get a desired result, and a result sample show below:
+We randomly choose a set of words from trainingdata, `[u'FDA', u'menu']`. The training data is so small that we can't get a desired result, and some result samples show below:
 
 >Depp Calorie proposes the pregnancy END END PAD
+>carries FDA Have of pleading fracas END PAD
 
 If you have large-scale dataset, I think you could get much better result.

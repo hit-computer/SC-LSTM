@@ -41,7 +41,7 @@ def Read_WordVec(config):
 
 def Create_Keyword_Voc(config):
     kwd_ls = []
-    with open(os.path.join(config.data_dir, 'TrainingData_keywords.txt'), 'r') as fr:
+    with open(os.path.join(config.data_dir, 'TrainingData_Keywords.txt'), 'r') as fr:
         for line in fr:
             kwd = line.decode('utf-8').split()
             kwd_ls += kwd
@@ -60,7 +60,7 @@ def Create_Keyword_Voc(config):
 
 def Read_Data(config, kwd_voc):
     trainingdata = []
-    with open(os.path.join(config.data_dir, 'TrainingData_Text.txt'),'r') as ftext, open(os.path.join(config.data_dir, 'TrainingData_keywords.txt'),'r') as fkwd:
+    with open(os.path.join(config.data_dir, 'TrainingData_Text.txt'),'r') as ftext, open(os.path.join(config.data_dir, 'TrainingData_Keywords.txt'),'r') as fkwd:
         for line1, line2 in zip(ftext, fkwd):
             line1 = line1.decode('utf-8')
             doc = line1.split()
