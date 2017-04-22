@@ -29,7 +29,7 @@ After you train the model, you can generate the text under the control of word s
 $ python generation.py
 ```
 
-### Result
+## Result
 
 We randomly choose a set of words from trainingdata, `[u'FDA', u'menu']`. The training data is so small that we can't get a desired result, and some result samples show below:
 
