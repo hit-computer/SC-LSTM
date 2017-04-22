@@ -29,7 +29,6 @@ class Model(object):
         self._input_data = tf.placeholder(tf.int32, [batch_size, num_steps])
         self._targets = tf.placeholder(tf.int32, [batch_size, num_steps]) #声明输入变量x, y
         self._input_word = tf.placeholder(tf.float32, [batch_size, key_words_voc_size])
-        self._init_output = tf.placeholder(tf.float32, [batch_size, size])
         self._mask = tf.placeholder(tf.float32, [batch_size, num_steps])
         
         LSTM_cell = SC_LSTM(key_words_voc_size, size, forget_bias=0.0, state_is_tuple=False)
@@ -39,6 +38,7 @@ class Model(object):
         cell = SC_MultiRNNCell([LSTM_cell] * config.num_layers, state_is_tuple=False)
 
         self._initial_state = cell.zero_state(batch_size, tf.float32)
+        self._init_output = tf.zeros([batch_size, size*config.num_layers], tf.float32)
 
         with tf.device("/cpu:0"):
             embedding = tf.get_variable('word_embedding', [vocab_size, config.word_embedding_size], trainable=True)
@@ -58,21 +58,25 @@ class Model(object):
                 with tf.variable_scope("RNN_sentence"):
                     if time_step > 0: tf.get_variable_scope().reuse_variables()
                     
-                    
                     sc_wr = tf.get_variable('sc_wr',[config.word_embedding_size, key_words_voc_size])
-                    sc_hr = tf.get_variable('sc_hr',[size, key_words_voc_size])
-                    r_t = tf.sigmoid(tf.matmul(inputs[:, time_step, :], sc_wr) + alpha * tf.matmul(output_state, sc_hr))
+                    res_wr = tf.matmul(inputs[:, time_step, :], sc_wr)
+                    
+                    res_hr = tf.zeros_like(res_wr, dtype = tf.float32)
+                    for layer_id in range(config.num_layers):
+                        sc_hr = tf.get_variable('sc_hr_%d'%layer_id,[size, key_words_voc_size])
+                        res_hr += alpha * tf.matmul(tf.slice(output_state, [0, size*layer_id], [-1, size]), sc_hr)
+                    r_t = tf.sigmoid(res_wr + res_hr)
                     sc_vec = r_t * sc_vec
                     
-                    (cell_output, state) = cell(inputs[:, time_step, :], state, sc_vec)
-                    outputs.append(cell_output)
-                    output_state = cell_output
+                    (cell_output, state, cell_outputs) = cell(inputs[:, time_step, :], state, sc_vec)
+                    outputs.append(cell_outputs)
+                    output_state = cell_outputs
             
             self._sc_vec = sc_vec
-            self._end_output = cell_output
+            self._end_output = output_state
             
-        output = tf.reshape(tf.concat(1, outputs), [-1, size])
-        softmax_w = tf.get_variable("softmax_w", [size, vocab_size])
+        output = tf.reshape(tf.concat(1, outputs), [-1, size*config.num_layers])
+        softmax_w = tf.get_variable("softmax_w", [size*config.num_layers, vocab_size])
         softmax_b = tf.get_variable("softmax_b", [vocab_size])
         logits = tf.matmul(output, softmax_w) + softmax_b
         
@@ -104,13 +108,10 @@ class Model(object):
 def run_epoch(session, m, data, state=None, sc_vec=None, flag = 1, last_output=None):
     """Runs the model on the given data."""
     x = data.reshape((1,1))
-    initial_output = np.zeros((m.batch_size, m.size))
     if flag == 0:
         prob, _state, _last_output, _sc_vec = session.run([m._prob, m.final_state, m.end_output, m._sc_vec],
                              {m.input_data: x,
-                              m._input_word: sc_vec,
-                              m.initial_state: state,
-                              m._init_output: initial_output})
+                              m._input_word: sc_vec})
     else:
         prob, _state, _last_output, _sc_vec = session.run([m._prob, m.final_state, m.end_output, m._sc_vec],
                              {m.input_data: x,
@@ -148,8 +149,7 @@ def main(_):
         print 'model loading ...'
         model_saver.restore(session, gen_config.model_path+'--%d'%gen_config.save_time)
         print 'Done!'
-
-        _state = mtest.initial_state.eval()
+        
         tmp = []
         beams = [(0.0, [idx_to_word[1]], idx_to_word[1])]
         tmp = np.zeros(gen_config.key_words_voc_size)
@@ -157,7 +157,7 @@ def main(_):
             tmp[keyword_to_idx[wd]] = 1.0
         _input_words = np.array([tmp], dtype=np.float32)
         test_data = np.int32([1])
-        prob, _state, _last_output, _sc_vec  = run_epoch(session, mtest, test_data, _state, sc_vec=_input_words, flag=0)
+        prob, _state, _last_output, _sc_vec  = run_epoch(session, mtest, test_data, sc_vec=_input_words, flag=0)
         y1 = np.log(1e-20 + prob.reshape(-1))
         if gen_config.is_sample:
             try:

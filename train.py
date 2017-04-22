@@ -54,8 +54,6 @@ class Model(object):
         self._targets = tf.reshape(self._targets, [batch_size, -1])
         self._mask = tf.reshape(self._mask, [batch_size, -1])
         
-        self._init_output = tf.placeholder(tf.float32, [batch_size, size])
-        
         LSTM_cell = SC_LSTM(key_words_voc_size, size, forget_bias=0.0, state_is_tuple=False)
         if is_training and config.keep_prob < 1:
             LSTM_cell = SC_DropoutWrapper(
@@ -63,6 +61,7 @@ class Model(object):
         cell = SC_MultiRNNCell([LSTM_cell] * config.num_layers, state_is_tuple=False)
 
         self._initial_state = cell.zero_state(batch_size, tf.float32)
+        self._init_output = tf.zeros([batch_size, size*config.num_layers], tf.float32)
 
         with tf.device("/cpu:0"):
             embedding = tf.get_variable('word_embedding', [vocab_size, config.word_embedding_size], trainable=True, initializer=tf.constant_initializer(word_embedding))
@@ -83,19 +82,24 @@ class Model(object):
                     if time_step > 0: tf.get_variable_scope().reuse_variables()
 
                     sc_wr = tf.get_variable('sc_wr',[config.word_embedding_size, key_words_voc_size])
-                    sc_hr = tf.get_variable('sc_hr',[size, key_words_voc_size])
-                    r_t = tf.sigmoid(tf.matmul(inputs[:, time_step, :], sc_wr) + alpha * tf.matmul(output_state, sc_hr))
+                    res_wr = tf.matmul(inputs[:, time_step, :], sc_wr)
+                    
+                    res_hr = tf.zeros_like(res_wr, dtype = tf.float32)
+                    for layer_id in range(config.num_layers):
+                        sc_hr = tf.get_variable('sc_hr_%d'%layer_id,[size, key_words_voc_size])
+                        res_hr += alpha * tf.matmul(tf.slice(output_state, [0, size*layer_id], [-1, size]), sc_hr)
+                    r_t = tf.sigmoid(res_wr + res_hr)
                     sc_vec = r_t * sc_vec
                     
-                    (cell_output, state) = cell(inputs[:, time_step, :], state, sc_vec)
-                    outputs.append(cell_output)
-                    output_state = cell_output
+                    (cell_output, state, cell_outputs) = cell(inputs[:, time_step, :], state, sc_vec)
+                    outputs.append(cell_outputs)
+                    output_state = cell_outputs
             
-            self._end_output = cell_output
+            self._end_output = output_state
             
-        output = tf.reshape(tf.concat(1, outputs), [-1, size])
+        output = tf.reshape(tf.concat(1, outputs), [-1, size*config.num_layers])
         
-        softmax_w = tf.get_variable("softmax_w", [size, vocab_size])
+        softmax_w = tf.get_variable("softmax_w", [size*config.num_layers, vocab_size])
         softmax_b = tf.get_variable("softmax_b", [vocab_size])
         logits = tf.matmul(output, softmax_w) + softmax_b
         loss = tf.nn.seq2seq.sequence_loss_by_example(
@@ -160,13 +164,10 @@ def run_epoch(session, m, eval_op):
     start_time = time.time()
     costs = 0.0
     iters = 0
-    initial_output = np.zeros((m.batch_size, m.size))
+    #initial_output = np.zeros((m.batch_size, m.size))
     for step in range(total_step+1):
-        state = m.initial_state.eval()
-        cost, _ = session.run([m.cost, eval_op],
-                                 {m.initial_state: state,
-                                  m._init_output: initial_output})
-        
+        #state = m.initial_state.eval()
+        cost, _ = session.run([m.cost, eval_op])
         
         if np.isnan(cost):
             print 'cost is nan!!!'

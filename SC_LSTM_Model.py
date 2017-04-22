@@ -46,6 +46,7 @@ class SC_MultiRNNCell(MultiRNNCell):
             cur_state_pos = 0
             cur_inp = inputs
             new_states = []
+            outputls = []
             for i, cell in enumerate(self._cells):
                 with vs.variable_scope("Cell%d" % i):
                     if self._state_is_tuple:
@@ -60,9 +61,11 @@ class SC_MultiRNNCell(MultiRNNCell):
                         cur_state_pos += cell.state_size
                     cur_inp, new_state = cell(cur_inp, cur_state, d_act)
                     new_states.append(new_state)
+                    outputls.append(cur_inp)
         new_states = (tuple(new_states) if self._state_is_tuple
                   else array_ops.concat(1, new_states))
-        return cur_inp, new_states
+        outputs = array_ops.concat(1, outputls)
+        return cur_inp, new_states, outputs
 
 class SC_DropoutWrapper(DropoutWrapper):
     def __call__(self, inputs, state, d_act, scope=None):
