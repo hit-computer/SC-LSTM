@@ -12,7 +12,7 @@ class Config(object):
     word_embedding_size = 5
     max_epoch = 30
     max_max_epoch = 80
-    keep_prob = 0.5
+    keep_prob = 0.5 #The probability that each element is kept through dropout layer
     lr_decay = 1.0
     batch_size = 16
     vocab_size = 2423

@@ -23,7 +23,7 @@ $ python train.py
 
 ### Generation
 
-After you train the model, you can generate the text under the control of word set. You should modify `generation.py` file and set `test_word` to a set of words. Then, if you want, you can also set some parameters for generation in `Config.py` file. Generate text by run:
+After you train the model, you can generate the text in the control of word set. You should modify `generation.py` file and set `test_word` to a set of words. Then, if you want, you can also set some parameters for generation in `Config.py` file. Generate text by run:
 
 ```
 $ python generation.py
