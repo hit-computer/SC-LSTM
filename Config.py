@@ -5,7 +5,7 @@ class Config(object):
     vec_file = 'Data/vec5.txt'
     init_scale = 0.04
     learning_rate = 0.001
-    max_grad_norm = 10
+    max_grad_norm = 10 #gradient clipping
     num_layers = 2
     num_steps = 25 #this value is one more than max number of words in sentence
     hidden_size = 20
