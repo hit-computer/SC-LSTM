@@ -13,7 +13,7 @@ In `Data/` respository, there are three files `TrainingData_Keywords.txt` , `Tra
 
 ### Training
 
-Before train the model, you should set some parameters of this model in `Config.py` file. Then, you need to run `Preprocess.py` file for creating `sclstm_data` file(convert trainingdata into binary formats of TensorFlow, and more detail about this can be found in [the blog](https://indico.io/blog/tensorflow-data-inputs-part1-placeholders-protobufs-queues/)), `word_vec.pkl` file(this is word embedding), `word_vec.pkl` file(vocabulary of text) and `kwd_voc.pkl` file(vocabulary of keywords). 
+Before train the model, you should set some parameters of this model in `Config.py` file. Then, you need to run `Preprocess.py` file for creating `sclstm_data` file(convert trainingdata into binary formats of TensorFlow, and more detail about this can be found in [the blog](https://indico.io/blog/tensorflow-data-inputs-part1-placeholders-protobufs-queues/)), `word_vec.pkl` file(this is word embedding), `word_vec.pkl` file(vocabulary of text) and `kwd_voc.pkl` file(vocabulary of keywords). At the same time, you should set `total_step` parameter in `train.py` whose value is got from output of `Preprocess.py`
 
 Start training the model using `train.py`:
 
