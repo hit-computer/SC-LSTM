@@ -1,10 +1,17 @@
 #coding:utf-8
 import tensorflow as tf
 import numpy as np
-from tensorflow.python.ops.rnn_cell import BasicLSTMCell
-from tensorflow.python.ops.rnn_cell import DropoutWrapper
-from tensorflow.python.ops.rnn_cell import _linear
-from tensorflow.python.ops.rnn_cell import MultiRNNCell
+try:
+    from tensorflow.python.ops.rnn_cell import BasicLSTMCell
+    from tensorflow.python.ops.rnn_cell import DropoutWrapper
+    from tensorflow.python.ops.rnn_cell import _linear
+    from tensorflow.python.ops.rnn_cell import MultiRNNCell
+except:
+    from tensorflow.contrib.rnn.python.ops.core_rnn_cell import BasicLSTMCell
+    from tensorflow.contrib.rnn.python.ops.core_rnn_cell import DropoutWrapper
+    from tensorflow.contrib.rnn.python.ops.core_rnn_cell_impl import _linear
+    from tensorflow.contrib.rnn.python.ops.core_rnn_cell import MultiRNNCell
+    
 from tensorflow.python.ops import variable_scope as vs
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops.math_ops import sigmoid
@@ -21,11 +28,17 @@ class SC_LSTM(BasicLSTMCell):
             if self._state_is_tuple:
                 c, h = state
             else:
-                c, h = array_ops.split(1, 2, state)
+                try:
+                    c, h = array_ops.split(1, 2, state)
+                except:
+                    c, h = array_ops.split(state, 2, 1)
             concat = _linear([inputs, h], 4 * self._num_units, True)
 
             # i = input_gate, j = new_input, f = forget_gate, o = output_gate
-            i, j, f, o = array_ops.split(1, 4, concat)
+            try:
+                i, j, f, o = array_ops.split(1, 4, concat)
+            except:
+                i, j, f, o = array_ops.split(concat, 4, 1)
             
             w_d = vs.get_variable('w_d', [self.key_words_voc_size, self._num_units])
             
@@ -36,7 +49,10 @@ class SC_LSTM(BasicLSTMCell):
             if self._state_is_tuple:
                 new_state = LSTMStateTuple(new_c, new_h)
             else:
-                new_state = array_ops.concat(1, [new_c, new_h])
+                try:
+                    new_state = array_ops.concat(1, [new_c, new_h])
+                except:
+                    new_state = array_ops.concat([new_c, new_h], 1)
             return new_h, new_state
 
 class SC_MultiRNNCell(MultiRNNCell):
@@ -62,9 +78,14 @@ class SC_MultiRNNCell(MultiRNNCell):
                     cur_inp, new_state = cell(cur_inp, cur_state, d_act)
                     new_states.append(new_state)
                     outputls.append(cur_inp)
-        new_states = (tuple(new_states) if self._state_is_tuple
-                  else array_ops.concat(1, new_states))
-        outputs = array_ops.concat(1, outputls)
+        try:
+            new_states = (tuple(new_states) if self._state_is_tuple
+                      else array_ops.concat(1, new_states))
+            outputs = array_ops.concat(1, outputls)
+        except:
+            new_states = (tuple(new_states) if self._state_is_tuple
+                      else array_ops.concat(new_states, 1))
+            outputs = array_ops.concat(outputls, 1)
         return cur_inp, new_states, outputs
 
 class SC_DropoutWrapper(DropoutWrapper):
