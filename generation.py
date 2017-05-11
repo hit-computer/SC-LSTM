@@ -75,7 +75,10 @@ class Model(object):
             self._sc_vec = sc_vec
             self._end_output = output_state
             
-        output = tf.reshape(tf.concat(1, outputs), [-1, size*config.num_layers])
+        try:
+            output = tf.reshape(tf.concat(1, outputs), [-1, size*config.num_layers])
+        except:
+            output = tf.reshape(tf.concat(outputs, 1), [-1, size*config.num_layers])
         softmax_w = tf.get_variable("softmax_w", [size*config.num_layers, vocab_size])
         softmax_b = tf.get_variable("softmax_b", [vocab_size])
         logits = tf.matmul(output, softmax_w) + softmax_b
