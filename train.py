@@ -8,6 +8,7 @@ import Config
 from SC_LSTM_Model import SC_LSTM
 from SC_LSTM_Model import SC_MultiRNNCell
 from SC_LSTM_Model import SC_DropoutWrapper
+from tensorflow.contrib.legacy_seq2seq.python.ops.seq2seq import sequence_loss_by_example
 
 config_tf = tf.ConfigProto()
 config_tf.gpu_options.allow_growth = True
@@ -97,15 +98,24 @@ class Model(object):
             
             self._end_output = output_state
             
-        output = tf.reshape(tf.concat(1, outputs), [-1, size*config.num_layers])
+        try:
+            output = tf.reshape(tf.concat(1, outputs), [-1, size*config.num_layers])
+        except:
+            output = tf.reshape(tf.concat(outputs, 1), [-1, size*config.num_layers])
         
         softmax_w = tf.get_variable("softmax_w", [size*config.num_layers, vocab_size])
         softmax_b = tf.get_variable("softmax_b", [vocab_size])
         logits = tf.matmul(output, softmax_w) + softmax_b
-        loss = tf.nn.seq2seq.sequence_loss_by_example(
-            [logits],
-            [tf.reshape(self._targets, [-1])],
-            [tf.reshape(self._mask, [-1])], average_across_timesteps=False)
+        try:
+            loss = tf.nn.seq2seq.sequence_loss_by_example(
+                [logits],
+                [tf.reshape(self._targets, [-1])],
+                [tf.reshape(self._mask, [-1])], average_across_timesteps=False)
+        except:
+            loss = sequence_loss_by_example(
+                [logits],
+                [tf.reshape(self._targets, [-1])],
+                [tf.reshape(self._mask, [-1])], average_across_timesteps=False)
             
         self._cost = cost = tf.reduce_sum(loss) / batch_size
         self._final_state = state
