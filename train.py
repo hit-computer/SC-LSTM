@@ -8,7 +8,10 @@ import Config
 from SC_LSTM_Model import SC_LSTM
 from SC_LSTM_Model import SC_MultiRNNCell
 from SC_LSTM_Model import SC_DropoutWrapper
-from tensorflow.contrib.legacy_seq2seq.python.ops.seq2seq import sequence_loss_by_example
+try:
+    from tensorflow.contrib.legacy_seq2seq.python.ops.seq2seq import sequence_loss_by_example
+except:
+    pass
 
 config_tf = tf.ConfigProto()
 config_tf.gpu_options.allow_growth = True
